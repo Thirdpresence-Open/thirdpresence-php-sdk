@@ -19,8 +19,8 @@ class ThirdpresenceSDKTestCase extends PHPUnit_Framework_TestCase {
     const API_KEY = 'just_a_test_key';
 
     public function testConstructor() {
-        $facebook = new Thirdpresence(self::API_KEY);
-        $this->assertEquals($facebook->getApiKey(), self::API_KEY,
+        $tpr = new Thirdpresence(self::API_KEY);
+        $this->assertEquals($tpr->getApiKey(), self::API_KEY,
                 'Expect the Api key to be set.');
     }
 
