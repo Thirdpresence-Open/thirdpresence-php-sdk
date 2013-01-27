@@ -1,0 +1,7 @@
+dist
+build
+sdist
+
+.*project
+.settings
+.build*
