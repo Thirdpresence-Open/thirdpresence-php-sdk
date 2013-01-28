@@ -33,18 +33,35 @@ Following examples refer to the API token by variable: $apiKey
 Thirdpresence PHP SDK API
 -------------------------
 
-List all the videos for this account.
+List all the videos for this account.<br/>
 @param int $itemCount The amount of items to return. Give 0 to get all videos.
 
-    getVideos($itemCount)
+* `getVideos($itemCount)`
 
------
-
-Gets the metadata of a video by the given (Thirdpresence) video id.
-@param int $videoId The video ID given by the Thirdpresence platform.
+Gets the metadata of a video by the given (Thirdpresence) video id.<br/>
+@param int $videoId The video ID given by the Thirdpresence platform.<br/>
 @return array The video metadata as PHP array.
 
-    getVideoById($videoId)
+* `getVideoById($videoId)`
+
+* `public function getVideoByReferenceId($referenceId)`
+* `public function getVideosByDesc($text)`
+* `public function getVideosByCategory($categoryId)`
+* `public function insertVideo($videoMetadata)`
+* `public function deleteVideo($videoId)`
+* `public function deleteVideoByReferenceId($referenceId)`
+* `public function updateVideoData($videoMetadata)`
+* `public function getDeliveryStatus($videoId)`
+* `public function getDeliveryStatusByReferenceId($referenceId)`
+* `public function listCategories()`
+* `public function addVideoCategory()`
+* `public function deleteCategory()`
+* `public function updateCategory()`
+* `public function addToken()`
+* `public function removeToken()`
+* `public function createNewAccount()`
+* `public function getSubaccounts()`
+* `public function stitchVideos()`
 
 
 Tests
