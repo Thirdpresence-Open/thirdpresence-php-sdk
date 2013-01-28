@@ -77,7 +77,7 @@ class Thirdpresence {
      * @param array $paramsArray Array of request parameters to add to the standard request.
      * @param array $dataArray Array of data to be added as JSON to POST request.
      * @throws Exception In case the returned data cannot be encoded as JSON data.
-     * @return array The response JSON data as PHP array.
+     * @return mixed Returns wither JSON data as array or string when applicable.
      */
     private function makeRequest($action, $paramsArray, $dataArray) {
         if (!array_key_exists($action, self::$ACTIONS)) {
@@ -87,15 +87,33 @@ class Thirdpresence {
         $url_namespace = self::$ACTIONS[$action][1];
         $version_str = self::$ACTIONS[$action][2];
 
+        $reply_data = '';
         if ('GET' == $http_verb) {
-            return $this->makeGetRequest($action, $url_namespace, $version_str,
-                       $paramsArray);
+            $reply_data = $this->makeGetRequest($action, $url_namespace,
+                              $version_str, $paramsArray);
         }
         else if ('POST' == $http_verb) {
-            return $this->makePostRequest($action, $url_namespace, $version_str,
-                       $paramsArray, $dataArray);
+            $reply_data = $this->makePostRequest($action, $url_namespace,
+                              $version_str, $paramsArray, $dataArray);
         }
-        throw new Exception("Invalid HTTP verb: " . $http_verb);
+        else {
+            throw new Exception("Invalid HTTP verb: " . $http_verb);
+        }
+
+        //echo "REPLY: " . $reply_data . "\n";
+        $json_data = json_decode($reply_data, TRUE);
+        if (FALSE == $json_data) {
+            if (NULL != $reply_data && strlen($reply_data) > 0) {
+                $reply_data = trim($reply_data);
+                if (strlen($reply_data) <= 30) {
+                    return $reply_data;
+                }
+            }
+            throw new Exception("Failed to decode reply: " . $reply_data);
+        }
+        else {
+            return $json_data;
+        }
     }
 
     /**
@@ -135,14 +153,9 @@ class Thirdpresence {
             )
         );
         $headers = stream_context_create($headerdata);
-        echo "URL: " . $url . "\n";
+        //echo "Making request to URL: " . $url . "\n";
         $reply_data = @file_get_contents($url, false, $headers);
-        echo "REPLY: " . $reply_data . "\n";
-        $json_data = json_decode($reply_data, TRUE);
-        if (FALSE == $json_data) {
-            throw new Exception("Failed to decode JSON: " . $reply_data);
-        }
-        return $json_data;
+        return $reply_data;
     }
 
     /**
@@ -173,7 +186,7 @@ class Thirdpresence {
     /**
      * List all the videos for this account.
      *
-     * @param int $itemCount The amount of items to return.
+     * @param int $itemCount The amount of items to return. Give 0 to get all videos.
      */
     public function getVideos($itemCount) {
         $params = array();
@@ -203,6 +216,18 @@ class Thirdpresence {
     public function getVideoByReferenceId($referenceId) {
         $params = array("providerId" => $referenceId);
         return $this->makeRequest("getVideoById", $params, NULL);
+    }
+
+    /**
+     * Gets a list of metadata if the given text appears in
+     * the video description.
+     * 
+     * @param string $text The text to be searched from the description.
+     * @return array The found video metadata as PHP array.
+     */
+    public function getVideosByDesc($text) {
+        $params = array("text" => $text);
+        return $this->makeRequest("getVideosByCategory", $params, NULL);
     }
 
     /**
@@ -236,6 +261,133 @@ class Thirdpresence {
      */
     public function insertVideo($videoMetadata) {
         return $this->makeRequest("insertVideo", NULL, $videoMetadata);
+    }
+
+    /**
+     * Deletes a video from the user's account by the given id.
+     * 
+     * @param int $videoId The video ID given by the Thirdpresence platform.
+     * @return Ambigous <mixed, string>
+     */
+    public function deleteVideo($videoId) {
+        $params = array("videoId" => $videoId);
+        return $this->makeRequest("deleteVideo", $params, NULL);
+    }
+
+    /**
+     * Deletes a video from the user's account by the reference id.
+     * 
+     * @param int $videoId The video ID given by the Thirdpresence platform.
+     * @return Ambigous <mixed, string>
+     */
+    public function deleteVideoByReferenceId($referenceId) {
+        $params = array("providerId" => $referenceId);
+        return $this->makeRequest("deleteVideo", $params, NULL);
+    }
+
+    /**
+     * Updates video metadata.
+     * You must give at least the video 'id' and then any fields you want
+     * to update in the metadata passed to this method.
+     * 
+     * Example metadata:
+     * array(
+     *  "name" => "New name for my video",
+     *  "synopsis" => "A new synopsis for my video",
+     *  "id" => 123456,
+     * )
+     * 
+     * @param array $videoMetadata The video metadata for updating the video.
+     * @return array The updated video metadata as PHP array.
+     */
+    public function updateVideoData($videoMetadata) {
+        return $this->makeRequest("updateVideoData", NULL, $videoMetadata);
+    }
+
+    /**
+     * Gets the status of a video by video id.
+     * 
+     * Returned status is one of the following values:
+     *  ACTIVE
+     *  PROCESSING
+     *  INACTIVE
+     *  ERROR
+     *  REMOVED
+     * 
+     * @param int $videoId The video ID given by the Thirdpresence platform.
+     * @return string Single string value as listed in the comment above.
+     */
+    public function getDeliveryStatus($videoId) {
+        $params = array("videoId" => $videoId);
+        return $this->makeRequest("getDeliveryStatus", $params, NULL);
+    }
+
+    /**
+     * Gets the status of a video by customer given reference id.
+     * 
+     * Returned status is one of the following values:
+     *  ACTIVE
+     *  PROCESSING
+     *  INACTIVE
+     *  ERROR
+     *  REMOVED
+     * 
+     * @param int $referenceId The video reference ID.
+     * @return string Single string value as listed in the comment above.
+     */
+    public function getDeliveryStatusByReferenceId($referenceId) {
+        $params = array("providerId" => $referenceId);
+        return $this->makeRequest("getDeliveryStatus", $params, NULL);
+    }
+
+    /**
+     * Lists the categories for the account.
+     * 
+     * Example of a returned category (one category inside a list):
+     * array(
+     *      [categoryId] => 12345
+     *      [name] => videos
+     *      [sourceurl] => 
+     *      [type] => vodvideo
+     *      [iconlocation] => http://thirdpresence-static-images.s3.amazonaws.com/default/iconClips.png
+     *  )
+     * 
+     * @return array The category metadata as PHP array.
+     */
+    public function listCategories() {
+        return $this->makeRequest("listCategories", NULL, NULL);
+    }
+
+    public function addVideoCategory() {
+        //TODO:
+    }
+
+    public function deleteCategory() {
+        //TODO:
+    }
+
+    public function updateCategory() {
+        //TODO:
+    }
+
+    public function addToken() {
+        //TODO:
+    }
+
+    public function removeToken() {
+        //TODO:
+    }
+
+    public function createNewAccount() {
+        //TODO:
+    }
+
+    public function getSubaccounts() {
+        //TODO:
+    }
+
+    public function stitchVideos() {
+        //TODO:
     }
 
 }
