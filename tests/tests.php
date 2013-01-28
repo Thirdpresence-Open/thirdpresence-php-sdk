@@ -16,13 +16,34 @@
  */
 
 class ThirdpresenceSDKTestCase extends PHPUnit_Framework_TestCase {
-    const API_KEY = 'just_a_test_key';
+    const API_KEY = 'give_a_valid_test_key_here';
 
     public function testConstructor() {
         $tpr = new Thirdpresence(self::API_KEY);
         $this->assertEquals($tpr->getApiKey(), self::API_KEY,
                 'Expect the Api key to be set.');
     }
+
+//     public function testInsertVideo() {
+//         $tpr = new Thirdpresence(self::API_KEY);
+//         $x = array(
+//             "name" => "TestVideo1",
+//             "synopsis" => "Test synopsis",
+//             "description" => "Test description",
+//             "expiretime" => "10.03.2013 02:17:08",
+//             "sourceurl" => "<valid_url_for_a_video>",
+//         );
+//         $reply = $tpr->insertVideo($x);
+//         echo "\n- - - - -\n";
+//         print_r($reply);
+//     }
+
+//     public function testGeneric() {
+//         $tpr = new Thirdpresence(self::API_KEY);
+//         $reply = $tpr->getVideosByCategory(-1);
+//         echo "\n- - - - -\n";
+//         print_r($reply);
+//     }
 
 }
 

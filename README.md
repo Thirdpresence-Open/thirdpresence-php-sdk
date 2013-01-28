@@ -15,13 +15,20 @@ http://console.thirdpresence.com
 Usage Examples
 --------------
 
-TODO: More will follow as the implementation continues
+    require "src/thirdpresence.php";
+    $tpr = new Thirdpresence(self::API_KEY);
+    $reply = $tpr->getVideosByCategory(-1);
+
+
+TODO: More examples will follow as the implementation continues
 
 
 Tests
 -----
 
-Run the Thirdpresence SDK unit tests usign the following command:
+NOTE: You can only run the tests by having a valid Thirdpresence API key
+which you must set in place into tests/tests.php for running tests.
+
+Run the Thirdpresence SDK unit tests using the following command:
 
     phpunit --stderr --bootstrap tests/bootstrap.php tests/tests.php
-
