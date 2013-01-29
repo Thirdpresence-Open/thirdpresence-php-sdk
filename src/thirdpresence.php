@@ -345,11 +345,11 @@ class Thirdpresence {
      * 
      * Example of a returned category (one category inside a list):
      * array(
-     *      [categoryId] => 12345
-     *      [name] => videos
-     *      [sourceurl] => 
-     *      [type] => vodvideo
-     *      [iconlocation] => http://thirdpresence-static-images.s3.amazonaws.com/default/iconClips.png
+     *      "categoryId" => 12345,
+     *      "name" => videos,
+     *      "sourceurl" => "",
+     *      "type" => "vodvideo",
+     *      "iconlocation" => "http://thirdpresence-static-images.s3.amazonaws.com/default/iconClips.png"
      *  )
      * 
      * @return array The category metadata as PHP array.
@@ -358,36 +358,148 @@ class Thirdpresence {
         return $this->makeRequest("listCategories", NULL, NULL);
     }
 
-    public function addVideoCategory() {
-        //TODO:
+    /**
+     * Adds a new video category with the given content.
+     * 
+     * If $sourceURL is given, it must point to a collection of videos, e.g.
+     * in ThirdPresence's own FTP or customer's own RSS. See:
+     * http://wiki.thirdpresence.com/index.php/Uploading_content_using_RSS
+     * 
+     * @param unknown $name The name of the new video category.
+     * @param unknown $sourceURL The source URL for fetching content, or NULL.
+     * @return array The added category metadata as PHP array.
+     */
+    public function addVideoCategory($name, $sourceURL) {
+        $params = array("name" => $name);
+        if (NULL != $sourceURL && strlen($sourceURL) > 0) {
+            $params["sourceurl"] = $sourceURL;
+        }
+        return $this->makeRequest("addVideoCategory", $params, NULL);
     }
 
-    public function deleteCategory() {
-        //TODO:
+    /**
+     * Deletes a video category with the given $categoryId.
+     * 
+     * If the $deleteContent is TRUE, then all the content in this
+     * category will be deleted also. If delete_content is FALSE,
+     * then all the content will be moved to the default category.
+     * 
+     * @param int $categoryId The ID of a video category.
+     * @param bool $deleteContent True or False,
+     *             i.e. whether to delete category contents.
+     * @return string Simple message stating whether the content was deleted.
+     */
+    public function deleteCategory($categoryId, $deleteContent) {
+        $params = array("categoryId" => $categoryId);
+        if (TRUE == $deleteContent || (NULL != $categoryId && "true" == $categoryId) ) {
+            $params["deleteContent"] = $deleteContent;
+        }
+        return $this->makeRequest("deleteCategory", $params, NULL);
     }
 
-    public function updateCategory() {
-        //TODO:
+    /**
+     * Updates a video category metadata.
+     * You can update the category name or the source URL with this call.
+     * 
+     * If $sourceURL is given, it must point to a collection of videos, e.g.
+     * in ThirdPresence's own FTP or customer's own RSS. See:
+     * http://wiki.thirdpresence.com/index.php/Uploading_content_using_RSS
+     * 
+     * @param int $categoryId The numeric id of the category.
+     * @param string $name The name of the new video category.
+     * @param string $sourceURL The source URL for fetching content, or NULL.
+     * @return array The category metadata as PHP array.
+     */
+    public function updateCategory($categoryId, $name, $sourceURL) {
+        $params = array("categoryId" => $categoryId);
+        if (NULL != $name && strlen($name) > 0) {
+            $params["name"] = $name;
+        }
+        if (NULL != $sourceURL && strlen($sourceURL) > 0) {
+            $params["sourceURL"] = $sourceURL;
+        }
+        return $this->makeRequest("updateCategory", $params, NULL);
     }
 
-    public function addToken() {
-        //TODO:
+    /**
+     * Adds an authorization token for a video.
+     * 
+     * @param string $videoId The ID of a video to add the token for.
+     * @param string $contentAuthToken The authentication token.
+     */
+    public function addToken($videoId, $contentAuthToken) {
+        $params = array("videoId" => $videoId,
+                        "contentAAToken" => $contentAuthToken);
+        return $this->makeRequest("addToken", $params, NULL);
     }
 
-    public function removeToken() {
-        //TODO:
+    /**
+     * Removes an authorization token from a video.
+     * 
+     * @param string $videoId The ID of a video to remove the token from.
+     * @param string $contentAuthToken The authentication token to be removed.
+     */
+    public function removeToken($videoId, $contentAuthToken) {
+        $params = array("videoId" => $videoId,
+                        "contentAAToken" => $contentAuthToken);
+        return $this->makeRequest("removeToken", $params, NULL);
     }
 
-    public function createNewAccount() {
-        //TODO:
+    /**
+     * Creates a new sub-account for a reseller account.
+     * 
+     * Created name for new account will be the reseller account prefixed
+     * by the new given account name.
+     * 
+     * @param string $accountName The name for the new sub-account.
+     * @param string $password Password for the new account console and statistics.
+     * @param string $callback Callback URL to be called when a new updated video
+     *                         for the account becomes available. Can be NULL.
+     * @return array Newly created account metadata as PHP array.
+     */
+    public function createNewSubAccount($accountName, $password, $callback) {
+        if (NULL == $accountName || strlen($accountName) < 3)
+            throw new Exception("Invalid account name: " . $accountName);
+        if (NULL == $password || strlen($password) < 6)
+            throw new Exception("Invalid password: " . $password);
+        $params = array("accountName" => $accountName,
+                        "password" => $password);
+        if (NULL != $callback && strlen($callback) > 0) {
+            $params["callback"] = $callback;
+        }
+        return $this->makeRequest("createNewAccount", $params, NULL);
     }
 
-    public function getSubaccounts() {
-        //TODO:
+    /**
+     * List existing sub-accounts for a reseller account.
+     * 
+     * @return array A list of reseller sub-accounts as PHP array.
+     */
+    public function listSubaccounts() {
+        return $this->makeRequest("getSubaccounts", $params, NULL);
     }
 
-    public function stitchVideos() {
-        //TODO:
+    /**
+     * Concatenates two videos based on the given metadata.
+     * 
+     * Mainly used for adding a preroll advertisement to a video.
+     * Notice that the sourceurl and adurl point to video IDs
+     * for videos already in the Thirdpresence platform.
+     * 
+     * Example metadata:
+     * array(
+     *     "name": "James Sanders provoca with preroll",
+     *     "expiretime": "10.03.2012 02:17:08",
+     *     "description": "Some description",
+     *     "sourceurl": "300001",
+     *     "adurl": "300002",
+     *     "categoryid": 1179
+     * )
+     * 
+     * @param unknown $metadata The video metadata. Example in the comment above.
+     */
+    public function stitchVideos($metadata) {
+        return $this->makeRequest("stitchVideos", NULL, $metadata);
     }
 
 }
