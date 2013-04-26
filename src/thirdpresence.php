@@ -371,8 +371,8 @@ class Thirdpresence {
      * in ThirdPresence's own FTP or customer's own RSS. See:
      * http://wiki.thirdpresence.com/index.php/Uploading_content_using_RSS
      * 
-     * @param unknown $name The name of the new video category.
-     * @param unknown $sourceURL The source URL for fetching content, or NULL.
+     * @param string $name The name of the new video category.
+     * @param string $sourceURL The source URL for fetching content, or NULL.
      * @return array The added category metadata as PHP array.
      */
     public function addVideoCategory($name, $sourceURL) {
@@ -482,7 +482,7 @@ class Thirdpresence {
      * @return array A list of reseller sub-accounts as PHP array.
      */
     public function listSubaccounts() {
-        return $this->makeRequest("getSubaccounts", $params, NULL);
+        return $this->makeRequest("getSubaccounts", NULL, NULL);
     }
 
     /**
