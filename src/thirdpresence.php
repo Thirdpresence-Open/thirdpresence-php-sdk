@@ -33,7 +33,7 @@ class Thirdpresence {
         "getVideoById" => array("GET", "video", "10-09"),
         "getVideosByDesc" => array("GET", "video", "10-09"),
         "getVideosByCategory" => array("GET", "video", "10-09"),
-        "getDeliveryStatus" => array("GET", "video", "10-09"),
+        "getDeliveryStatus" => array("GET", "video", "03-13"),
         "insertVideo" => array("POST", "video", "10-09"),
         "deleteVideo" => array("GET", "video", "10-09"),
         "updateVideoData" => array("POST", "video", "10-09"),
