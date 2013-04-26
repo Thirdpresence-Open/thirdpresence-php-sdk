@@ -50,6 +50,12 @@ class Thirdpresence {
         "getSubaccounts" => array("GET", "account", "05-10"),
 
         "stitchVideos" => array("POST", "ads", "06-11"),
+
+        "insertLinearVASTAd" => array("POST", "vast", "03-13"),
+        "updateLinearVASTAd" => array("POST", "vast", "03-13"),
+        "deleteLinearVASTAd" => array("GET", "vast", "03-13"),
+        "getLinearVASTAdById" => array("GET", "vast", "03-13"),
+        "getLinearVASTAds" => array("GET", "vast", "03-13"),
     );
 
     /**
@@ -496,10 +502,101 @@ class Thirdpresence {
      *     "categoryid": 1179
      * )
      * 
-     * @param unknown $metadata The video metadata. Example in the comment above.
+     * @param array $metadata The video metadata. Example in the comment above.
      */
     public function stitchVideos($metadata) {
         return $this->makeRequest("stitchVideos", NULL, $metadata);
+    }
+
+    /**
+     * Inserts a new video into user'a account that will be turned into
+     * an advertisement that is available in VAST 3.0 format.
+     * 
+     * You can also use existing video items by providing key 'videoid'
+     * with a id value pointing to some existing video item on your account.
+     * 
+     * See VAST specification at IAB net site: http://www.iab.net/vast
+     * 
+     * You can use following keywords (macros) that will be replaced if used in URLs:
+     * 
+     * [TIMESTAMP] will be replaced with the timestamp since epoch in seconds
+     * [AD_ID] will be replaced by the VAST ad id 'adid'
+     * [CREATIVE_ID] will be replaced by the creative id, but not if used in 'impressionurl'.
+     * 
+     * Example video metadata dict:
+     * {
+     *   "adid": "my_ad_id_0001",
+     *   "description": "My first VAST advertisement",
+     *   "impressionurl": "http://somehost/adserver/tracking/impressions/[AD_ID]?timestamp=[TIMESTAMP]",
+     *   "trackingevents": {
+     *     "resume": "http://somehost/adserver/tracking/events/resume/[CREATIVE_ID]?timestamp=[TIMESTAMP]",
+     *     "start": "http://somehost/adserver/tracking/events/start/[CREATIVE_ID]?timestamp=[TIMESTAMP]",
+     *     "complete": "http://somehost/adserver/tracking/events/complete/[CREATIVE_ID]?timestamp=[TIMESTAMP]"
+     *   },
+     *   "videoclicks": {
+     *     "clickthrough": "http://somehost/adserver/tracking/clickthrough/[CREATIVE_ID]?timestamp=[TIMESTAMP]&link=http://mylandingsite/",
+     *   },
+     *   "releasetime": "2013-03-01T04:00:00Z",
+     *   "expiretime": "2013-03-31T04:00:00Z",
+     *   "sourceurl": "http://somehost/EXAMPLE.mp4",
+     *   "categoryid": 1179
+     * }
+     * 
+     * Notice that if you use 'videoid' key to use an existing video,
+     * then the following keys will be ignored:
+     * * releasetime
+     * * expiretime
+     * * sourceurl
+     * * categoryid
+     * 
+     * @param array $metadata A dictionary with the video and ad metadata.
+     * @return array The metadata of the added VAST ad in JSON format.
+     */
+    public function insertLinearVastAd($metadata) {
+        return $this->makeRequest("insertLinearVASTAd", NULL, $metadata);
+    }
+
+    /**
+     * Updates an existing VAST advertisement.
+     * 
+     * See example of the VAST ad object structure from method: insertLinearVastAd
+     * 
+     * @param array $metadata A dictionary with the video and ad metadata.
+     * @return array The metadata of the updated VAST ad in JSON format.
+     */
+    public function updateLinearVastAd($metadata) {
+        return $this->makeRequest("updateLinearVASTAd", NULL, $metadata);
+    }
+
+    /**
+     * Deletes an existing VAST advertisement.
+     * 
+     * @param string $adid The Ad ID of the VAST ad to be deleted
+     * @return array JSON object describing whether the delete succeeded.
+     */
+    public function deleteLinearVASTAd($adid) {
+        $params = array("adid" => $adid);
+        return $this->makeRequest("deleteLinearVASTAd", $params, NULL);
+    }
+
+    /**
+     * Gets an existing VAST advertisement.
+     * 
+     * @param string $adid The Ad ID of the VAST ad to be retrieved
+     * @return array The metadata of the retrieved VAST ad in JSON format.
+     */
+    public function getLinearVASTAdById($adid) {
+        $params = array("adid" => $adid);
+        return $this->makeRequest("getLinearVASTAdById", $params, NULL);
+    }
+
+    /**
+     * Gets all the existing VAST advertisements.
+     * 
+     * @return array The metadata of the retrieved VAST ads in JSON format.
+     */
+    public function getLinearVASTAds($adid) {
+        return $this->makeRequest("getLinearVASTAds", NULL, NULL);
     }
 
 }
